@@ -113,7 +113,7 @@
                                 </div>
                         </li>
 
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                 Suggestions
                              </a>
@@ -122,14 +122,14 @@
                                     <a class="dropdown-item" href="{{route('tags.index')}}">Subject Suggestions</a>
                                     </a>
 
-                                    <!-- <a class="dropdown-item" href="{{route('keywordsuggest.index')}}">Book Subject Suggestions</a> -->
+                                <a class="dropdown-item" href="{{route('keywordsuggest.index')}}">Book Subject Suggestions</a> 
                                     </a>
                                 </div>
-                        </li>
-
-                        <!-- <li class="nav-item">
-                            <a class="nav-link" href="{{route('keywords.index')}}">Book Subject</a>
                         </li> -->
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('tags.index')}}">Suggestions</a>
+                        </li>
 
                         <li class="nav-item">
                             <a class="nav-link" href="{{route('booklist_pdf')}}">Reports</a>
@@ -169,7 +169,7 @@
                                 </div>
                         </li>
 
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                 Suggestions
                              </a>
@@ -178,14 +178,14 @@
                                     <a class="dropdown-item" href="{{route('tags.index')}}">Subject Suggestions</a>
                                     </a>
 
-                                    <!-- <a class="dropdown-item" href="{{route('keywordsuggest.index')}}">Book Subject Suggestions</a> -->
+                                <a class="dropdown-item" href="{{route('keywordsuggest.index')}}">Book Subject Suggestions</a> 
                                     </a>
                                 </div>
-                        </li>
-
-                        <!-- <li class="nav-item">
-                            <a class="nav-link" href="{{route('keywords.index')}}">Book Subject</a>
                         </li> -->
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('tags.index')}}">Suggestions</a>
+                        </li>
                         
                         <li class="nav-item">
                         <a class="nav-link" href="{{route('booklist_pdf')}}">Reports</a>
@@ -205,7 +205,7 @@
                             <a class="nav-link" href="{{route('requisitions.index')}}">Requisitions</a>
                         </li> 
                         
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                 Suggestions
                              </a>
@@ -214,10 +214,14 @@
                                     <a class="dropdown-item" href="{{route('tags.index')}}">Subject Suggestions</a>
                                     </a>
 
-                                    <!-- <a class="dropdown-item" href="{{route('keywordsuggest.index')}}">Book Subject Suggestions</a> -->
+                                <a class="dropdown-item" href="{{route('keywordsuggest.index')}}">Book Subject Suggestions</a> 
                                     </a>
                                 </div>
-                        </li> 
+                        </li> -->
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('tags.index')}}">Suggestions</a>
+                        </li>
 
                         <!-- teacher -->
                         @elseif(Auth::user()->type == 'teacher')
@@ -228,8 +232,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{route('books.index')}}">Books</a>
                         </li>  
-
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                 Suggestions
                              </a>
@@ -238,9 +241,13 @@
                                     <a class="dropdown-item" href="{{route('tags.index')}}">Subject Suggestions</a>
                                     </a>
 
-                                    <!-- <a class="dropdown-item" href="{{route('keywordsuggest.index')}}">Book Subject Suggestions</a> -->
+                                <a class="dropdown-item" href="{{route('keywordsuggest.index')}}">Book Subject Suggestions</a> 
                                     </a>
                                 </div>
+                        </li> -->
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('tags.index')}}">Suggestions</a>
                         </li>
                         
                         <li class="nav-item">

@@ -189,8 +189,11 @@ class UserController extends Controller
             'password' => $user->school_id,
         ]);
     
-        // Redirect back to the index page with a success message
-        return redirect()->route('users.index')->with('success', 'Password restored for user ' . $user->id);
+        // Log out the user
+        Auth::logout();
+    
+        // Redirect to the login page with a success message
+        return redirect()->route('login')->with('success', 'Password restored successfully. Please log in again.');
     }
     
 

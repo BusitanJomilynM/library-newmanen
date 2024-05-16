@@ -158,12 +158,13 @@
             <div class="form-group">
               <i>Textboxes marked with an asterisk are required.</i>
             </div>
-          </div>
           
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-danger">Submit</button>
           </div>
+          </div>
+
         </form>
     </div>
   </div>
