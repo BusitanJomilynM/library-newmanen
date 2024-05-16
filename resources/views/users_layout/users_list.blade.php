@@ -44,15 +44,15 @@
       <td>{{$user->middle_name}}</td>
       <td>{{$user->last_name}}</td>
       <td>{{$user->email}}</td>
-      <td>+{{$user->contact_number}}</td>
+      <td>{{$user->contact_number}}</td>
       <td>
-      @if($user->type == 'technician librarian')  
+      @if($user->type == '0')  
         Technical Librarian
-      @elseif($user->type == 'staff librarian')
+      @elseif($user->type == '1')
         Section  Librarian
-      @elseif($user->type == 'department representative')
+      @elseif($user->type == '2')
         Program Chairman
-        @elseif($user->type == 'teacher')
+      @elseif($user->type == '3')
         Faculty Staff
       @endif</td>
     <td>
@@ -253,11 +253,11 @@
 <br>
     <div class="form-group">
         <label class="required">Role</label>
-            <select class="form-control" name="type" id="type" value="{{$user->type}}" required>
-                <option value="0" {{ old('type') == "technician librarian" || $user->type == "technician librarian" ? 'selected' : '' }}>Technical Librarian</option>
-                <option value="1" {{ old('type') == "staff librarian" || $user->type == "staff librarian" ? 'selected' : '' }}>Section Librarian</option>
-                <option value="2" {{ old('type') == "department representative" || $user->type == "department representative" ? 'selected' : '' }}>Program Chairman</option>
-                <option value="3" {{ old('type') == "teacher" || $user->type == "teacher" ? 'selected' : '' }}>Faculty Staff</option>
+        <select class="form-control" name="type" id="type" value="{{$user->type}}" required>
+                <option value="0" {{ old('type') == "0" || $user->type == "0" ? 'selected' : '' }}>Technical Librarian</option>
+                <option value="1" {{ old('type') == "1" || $user->type == "1" ? 'selected' : '' }}>Section Librarian</option>
+                <option value="2" {{ old('type') == "2" || $user->type == "2" ? 'selected' : '' }}>Program Chairman</option>
+                <option value="3" {{ old('type') == "3" || $user->type == "3" ? 'selected' : '' }}>Faculty Staff</option>
             </select>
     </div>
 

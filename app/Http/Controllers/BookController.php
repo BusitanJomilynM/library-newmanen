@@ -383,252 +383,276 @@ class BookController extends Controller{
 
     }
     public function booklistPdf(Request $request, Book $book)
-{
-    $courses = Course::all();    
-    $subjects = Subject::all();  
-    $books = Book::all();    
-    $user = Auth::user();
-
-    $course_name = $request->input('course');
-    $callNumberPrefixes = explode(',', $request->input('callNumberPrefix'));
-
-    $course = Course::where('course_name', $course_name)->first();
-    $course_code = $course ? $course->course_code : null;
-
-    $prefix = strtoupper($request->input('callNumberPrefix'));
-
-    $setCount = 1;
-    $filteredBooksSets = [];
-    $bookStatsSets = [];
-    $subjectNamesListSets = [];
-    $subjectCodesListSets = [];
-    $uniqueCallNumbersSets = [];
-
-    while ($request->has("subject_$setCount") && $request->has("keyword_$setCount")) {
-        $subjectIDList = [];
-        $subjectNamesList = [];
-        $subjectNamee = [];
-        $subjectCodesList = [];
-        $keywordsList = [];
-        $filteredBooks = collect();
-
-        $subjectNames = $request->input("subject_$setCount");
-        $subject = Subject::where('id', $subjectNames)->first();
-        if ($subject) {
-            $subjectIDList[] = $subject->id;
-            $subjectNamesList[] = $subjectNames;
-            $subjectNamee[] = $subject->subject_name;
-            $subjectCodesList[] = $subject->subject_code;
-            $keywordsList[] = $request->input("keyword_$setCount");
-        }
-
-        $keywordInput = $request->input("keyword_$setCount");
-
-        foreach ($books as $book) {
-            $jsonSubject = $book->book_subject;
-            $subjectArray = json_decode($jsonSubject, true);
-
-            if ($book->archive_reason) {
-                continue;
+    {
+        $courses = Course::all();    
+        $subjects = Subject::all();  
+        $books = Book::all();    
+        $user = Auth::user();
+    
+        $course_name = $request->input('course');
+        $callNumberPrefixes = explode(',', $request->input('callNumberPrefix'));
+    
+        $course = Course::where('course_name', $course_name)->first();
+        $course_code = $course ? $course->course_code : null;
+    
+        $callNumberPrefix = strtoupper($request->input('callNumberPrefix'));
+        $prefixes = explode(',', $callNumberPrefix);
+        
+        $setCount = 1;
+        $filteredBooksSets = [];
+        $bookStatsSets = [];
+        $subjectNamesListSets = [];
+        $subjectCodesListSets = [];
+        $uniqueCallNumbersSets = [];
+    
+        while ($request->has("subject_$setCount") && $request->has("keyword_$setCount")) {
+            $subjectIDList = [];
+            $subjectNamesList = [];
+            $subjectNamee = [];
+            $subjectCodesList = [];
+            $keywordsList = [];
+            $filteredBooks = collect();
+    
+            $subjectNames = $request->input("subject_$setCount");
+            $subject = Subject::where('id', $subjectNames)->first();
+            if ($subject) {
+                $subjectIDList[] = $subject->id;
+                $subjectNamesList[] = $subjectNames;
+                $subjectNamee[] = $subject->subject_name;
+                $subjectCodesList[] = $subject->subject_code;
+                $keywordsList[] = $request->input("keyword_$setCount");
             }
-
-            if ($prefix && strpos($book->book_callnumber, $prefix) !== 0) {
-                continue;
-            }
-
-            $matched = false;
-
-            foreach ($subjectIDList as $subjectid) {
-                if (in_array($subjectid, $subjectArray)) {
-                    $matched = true;
-                    break;
+    
+            $keywordInput = $request->input("keyword_$setCount");
+    
+            foreach ($books as $book) {
+                $jsonSubject = $book->book_subject;
+                $subjectArray = json_decode($jsonSubject, true);
+    
+                if ($book->archive_reason) {
+                    continue;
                 }
-            }
-
-            if (!$matched && !empty($keywordInput)) {
-                $keywordArray = explode(',', $keywordInput);
-                foreach ($keywordArray as $keyword) {
-                    if (strpos(strtolower($book->book_keyword), strtolower($keyword)) !== false) {
+    
+                $matched = false;
+                if (!empty($keywordInput)) {
+                    $keywordArray = explode(',', $keywordInput);
+                    foreach ($keywordArray as $keyword) {
+                        if (stripos($book->book_title, $keyword) !== false || stripos($book->book_abstract, $keyword) !== false) {
+                            $matched = true;
+                            break;
+                        }
+                    }
+                }
+    
+                foreach ($subjectIDList as $subjectid) {
+                    if (in_array($subjectid, $subjectArray)) {
                         $matched = true;
                         break;
                     }
                 }
+    
+                if (!$matched && !empty($keywordInput)) {
+                    $keywordArray = explode(',', $keywordInput);
+                    foreach ($keywordArray as $keyword) {
+                        if (strpos(strtolower($book->book_keyword), strtolower($keyword)) !== false) {
+                            $matched = true;
+                            break;
+                        }
+                    }
+                }
+    
+                // If the book matches other criteria, check its call number against each prefix
+                if ($matched) {
+                    foreach ($prefixes as $prefix) {
+                        if (strpos($book->book_callnumber, $prefix) === 0) {
+                            $filteredBooks->push($book);
+                            break;
+                        }
+                    }
+                }        
+    
             }
-
-            if ($matched) {
-                $filteredBooks->push($book);
-            }
-        }
-
-        $filteredBooks = $filteredBooks->unique('id');
-
-        $filteredBooksSets[$setCount] = $filteredBooks;
-        $subjectNamesListSets[$setCount] = $subjectNamee;
-        $subjectCodesListSets[$setCount] = $subjectCodesList;
-
-        $encounteredCallNumbers = [];
-        $bookStats = [];
-        $uniqueCallNumbers = [];
-
-        foreach ($filteredBooks as $book) {
-            $callNumber = $book->book_callnumber;
-
-            if (!isset($encounteredCallNumbers[$callNumber])) {
-                $encounteredCallNumbers[$callNumber] = true;
-                $uniqueCallNumbers[] = $callNumber;
-            }
-
-            if (!isset($bookStats[$callNumber])) {
-                $bookStats[$callNumber] = [
-                    'title' => $book->book_title,
-                    'call_number' => $callNumber,
-                    'author' => $book->book_author,
-                    'totalCopies' => 1,
-                    'copyright' => $book->book_copyrightyear,
-                ];
-            } else {
-                $bookStats[$callNumber]['totalCopies'] += 1;
-            }
-        }
-
-        $uniqueCallNumbersCount = count($uniqueCallNumbers);
-        $uniqueCallNumbersSets[$setCount] = $uniqueCallNumbersCount;
-        $bookStatsSets[$setCount] = $bookStats;
-
-        $setCount++;
-    }
-
-    if (!empty($filteredBooksSets)) {
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('books_layout.pdf_view', compact('user', 'course_name', 'course_code', 'bookStatsSets', 'filteredBooksSets', 'subjectNamesListSets', 'subjectCodesListSets', 'uniqueCallNumbersSets'))->setPaper('a4', 'portrait');            
-        return $pdf->stream('booklist.pdf');
-    } else {
-        return view('books_layout.booklist_pdf', ['books' => $books, 'courses' => $courses, 'subjects' => $subjects]);
-    }
-}
-
-public function collectionAnalysis(Request $request, Book $book)
-{
-    $courses = Course::all();    
-    $subjects = Subject::all();  
-    $books = Book::all();    
-    $user = Auth::user();
-
-    $course_name = $request->input('course');
-    $callNumberPrefixes = explode(',', $request->input('callNumberPrefix'));
-
-    $course = Course::where('course_name', $course_name)->first();
-    $course_code = $course ? $course->course_code : null;
-
-    $prefix = strtoupper($request->input('callNumberPrefix'));
-
-    $filteredBooksSets = []; // Array to hold filtered books from different sets
-    $bookStatsSets = []; // Array to hold book stats for different sets
-    $subjectNamesListSets = []; // Array to hold subject names for different sets
-    $subjectCodesListSets = []; // Array to hold subject codes for different sets
-
-    $setCount = 1;
-    while ($request->has("subject_$setCount") && $request->has("keyword_$setCount")) {
-        // Initialize subject-specific arrays for each set
-        $subjectNamesList = [];
-        $subjectNamee = [];
-        $subjectCodesList = [];
-        $keywordsList = [];
-        $subjectIDList = []; // Reset subject ID list for each set
+            
+            // Store filtered books and other data sets as needed...
+            $filteredBooks = $filteredBooks->unique('id');
     
-        $filteredBooks = collect(); // Reset filtered books collection for each set
+            $filteredBooksSets[$setCount] = $filteredBooks;
+            $subjectNamesListSets[$setCount] = $subjectNamee;
+            $subjectCodesListSets[$setCount] = $subjectCodesList;
     
-        $subjectNames = $request->input("subject_$setCount");
-        $subject = Subject::where('id', $subjectNames)->first();
-        if ($subject) {
-            $subjectIDList[] = $subject->id;
-            $subjectNamesList[] = $subjectNames;
-            $subjectNamee[] = $subject->subject_name;
-            $subjectCodesList[] = $subject->subject_code; // Store subject code
-            $keywordsList[] = $request->input("keyword_$setCount");
-        }
+            $encounteredCallNumbers = [];
+            $bookStats = [];
+            $uniqueCallNumbers = [];
     
-        // Get keyword input for this set
-        $keywordInput = $request->input("keyword_$setCount");
+            foreach ($filteredBooks as $book) {
+                $callNumber = $book->book_callnumber;
     
-        foreach ($books as $book) {
-            $jsonSubject = $book->book_subject;
-            $subjectArray = json_decode($jsonSubject, true);
+                if (!isset($encounteredCallNumbers[$callNumber])) {
+                    $encounteredCallNumbers[$callNumber] = true;
+                    $uniqueCallNumbers[] = $callNumber;
+                }
     
-            if ($book->archive_reason) {
-                continue; // Skip the book if it is archived
-            }
-    
-            if ($prefix && strpos($book->book_callnumber, $prefix) !== 0) {
-                continue; // Skip the book if the prefix doesn't match
-            }
-    
-            $matched = false; // Flag to indicate if any match is found
-    
-            // Check if any subject name provided by the user matches any subject in the book
-            foreach ($subjectIDList as $subjectid) {
-                if (in_array($subjectid, $subjectArray)) {
-                    $matched = true; // Set the flag to true since a match occurred
-                    break; // Once a match is found, break the loop for this book
+                if (!isset($bookStats[$callNumber])) {
+                    $bookStats[$callNumber] = [
+                        'title' => $book->book_title,
+                        'call_number' => $callNumber,
+                        'author' => $book->book_author,
+                        'totalCopies' => 1,
+                        'copyright' => $book->book_copyrightyear,
+                    ];
+                } else {
+                    $bookStats[$callNumber]['totalCopies'] += 1;
                 }
             }
     
-            // Check if no match is found based on subjects and if keywordInput is not empty
-            if (!$matched && !empty($keywordInput)) {
-                $keywordArray = explode(',', $keywordInput);
-                // Check if any keyword provided by the user matches any keyword in the book
-                foreach ($keywordArray as $keyword) {
-                    if (strpos(strtolower($book->book_keyword), strtolower($keyword)) !== false) {
-                        $matched = true;
-                        break; // Break the loop once a match is found
+            $uniqueCallNumbersCount = count($uniqueCallNumbers);
+            $uniqueCallNumbersSets[$setCount] = $uniqueCallNumbersCount;
+            $bookStatsSets[$setCount] = $bookStats;
+    
+            $setCount++;
+        }
+    
+        if (!empty($filteredBooksSets)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('books_layout.pdf_view', compact('user', 'course_name', 'course_code', 'bookStatsSets', 'filteredBooksSets', 'subjectNamesListSets', 'subjectCodesListSets', 'uniqueCallNumbersSets'))->setPaper('a4', 'portrait');            
+            return $pdf->stream('booklist.pdf');
+        } else {
+            return view('books_layout.booklist_pdf', ['books' => $books, 'courses' => $courses, 'subjects' => $subjects]);
+        }
+    }
+    
+    public function collectionAnalysis(Request $request, Book $book)
+    {
+        $courses = Course::all();    
+        $subjects = Subject::all();  
+        $books = Book::all();    
+        $user = Auth::user();
+    
+        $course_name = $request->input('course');
+        $callNumberPrefixes = explode(',', $request->input('callNumberPrefix'));
+    
+        $course = Course::where('course_name', $course_name)->first();
+        $course_code = $course ? $course->course_code : null;
+    
+        $callNumberPrefix = strtoupper($request->input('callNumberPrefix'));
+        $prefixes = explode(',', $callNumberPrefix);
+        
+        $filteredBooksSets = []; // Array to hold filtered books from different sets
+        $bookStatsSets = []; // Array to hold book stats for different sets
+        $subjectNamesListSets = []; // Array to hold subject names for different sets
+        $subjectCodesListSets = []; // Array to hold subject codes for different sets
+    
+        $setCount = 1;
+        while ($request->has("subject_$setCount") && $request->has("keyword_$setCount")) {
+            // Initialize subject-specific arrays for each set
+            $subjectNamesList = [];
+            $subjectNamee = [];
+            $subjectCodesList = [];
+            $keywordsList = [];
+            $subjectIDList = []; // Reset subject ID list for each set
+        
+            $filteredBooks = collect(); // Reset filtered books collection for each set
+        
+            $subjectNames = $request->input("subject_$setCount");
+            $subject = Subject::where('id', $subjectNames)->first();
+            if ($subject) {
+                $subjectIDList[] = $subject->id;
+                $subjectNamesList[] = $subjectNames;
+                $subjectNamee[] = $subject->subject_name;
+                $subjectCodesList[] = $subject->subject_code; // Store subject code
+                $keywordsList[] = $request->input("keyword_$setCount");
+            }
+        
+            // Get keyword input for this set
+            $keywordInput = $request->input("keyword_$setCount");
+        
+            foreach ($books as $book) {
+                $jsonSubject = $book->book_subject;
+                $subjectArray = json_decode($jsonSubject, true);
+        
+                if ($book->archive_reason) {
+                    continue; // Skip the book if it is archived
+                }
+        
+                $matched = false; // Flag to indicate if any match is found
+                if (!empty($keywordInput)) {
+                    $keywordArray = explode(',', $keywordInput);
+                    foreach ($keywordArray as $keyword) {
+                        if (stripos($book->book_title, $keyword) !== false || stripos($book->book_abstract, $keyword) !== false) {
+                            $matched = true;
+                            break;
+                        }
+                    }
+                }
+                // Check if any subject name provided by the user matches any subject in the book
+                foreach ($subjectIDList as $subjectid) {
+                    if (in_array($subjectid, $subjectArray)) {
+                        $matched = true; // Set the flag to true since a match occurred
+                        break; // Once a match is found, break the loop for this book
+                    }
+                }
+        
+                // Check if no match is found based on subjects and if keywordInput is not empty
+                if (!$matched && !empty($keywordInput)) {
+                    $keywordArray = explode(',', $keywordInput);
+                    // Check if any keyword provided by the user matches any keyword in the book
+                    foreach ($keywordArray as $keyword) {
+                        if (strpos(strtolower($book->book_keyword), strtolower($keyword)) !== false) {
+                            $matched = true;
+                            break; // Break the loop once a match is found
+                        }
+                    }
+                }
+        
+                // Only add to filtered books if matched and call number prefix matches
+                if ($matched) {
+                    foreach ($prefixes as $prefix) {
+                        if (strpos($book->book_callnumber, $prefix) === 0) {
+                            $filteredBooks->push($book);
+                            break;
+                        }
                     }
                 }
             }
-    
-            // Only add to filtered books if matched
-            if ($matched) {
-                $filteredBooks->push($book);
-            }
-        }
+            
+            // Remove duplicates from filtered books
+            $filteredBooks = $filteredBooks->unique('id');
         
-        // Remove duplicates from filtered books
-        $filteredBooks = $filteredBooks->unique('id');
-    
-        // Store filtered books for the current set
-        $filteredBooksSets[$setCount] = $filteredBooks;
-    
-        // Store subject names and codes for the current set
-        $subjectNamesListSets[$setCount] = $subjectNamee;
-        $subjectCodesListSets[$setCount] = $subjectCodesList;
-    
-        // Calculate book stats for the current set
-        $bookStats = [];
-        foreach ($filteredBooks as $book) {
-            $callNumber = $book->book_callnumber;
-    
-            if (!isset($bookStats[$callNumber])) {
-                $bookStats[$callNumber] = [
-                    'totalCopies' => 1,
-                    'copyright' => $book->book_copyrightyear,
-                ];
-            } else {
-                $bookStats[$callNumber]['totalCopies'] += 1;
+            // Store filtered books for the current set
+            $filteredBooksSets[$setCount] = $filteredBooks;
+        
+            // Store subject names and codes for the current set
+            $subjectNamesListSets[$setCount] = $subjectNamee;
+            $subjectCodesListSets[$setCount] = $subjectCodesList;
+        
+            // Calculate book stats for the current set
+            $bookStats = [];
+            foreach ($filteredBooks as $book) {
+                $callNumber = $book->book_callnumber;
+        
+                if (!isset($bookStats[$callNumber])) {
+                    $bookStats[$callNumber] = [
+                        'totalCopies' => 1,
+                        'copyright' => $book->book_copyrightyear,
+                    ];
+                } else {
+                    $bookStats[$callNumber]['totalCopies'] += 1;
+                }
             }
+        
+            // Store book stats for the current set
+            $bookStatsSets[$setCount] = $bookStats;
+        
+            $setCount++; // Increment set count for next iteration
         }
-    
-        // Store book stats for the current set
-        $bookStatsSets[$setCount] = $bookStats;
-    
-        $setCount++; // Increment set count for next iteration
+                                    
+        if (!empty($filteredBooksSets)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('books_layout.pdf_collection', compact('user', 'course_name', 'course_code', 'bookStatsSets', 'filteredBooksSets', 'subjectNamesListSets', 'subjectCodesListSets'))->setPaper('a4', 'landscape');
+            return $pdf->stream('collectionanalysis.pdf');
+        } else {
+            return view('books_layout.booklist_pdf', ['books' => $books, 'courses' => $courses, 'subjects' => $subjects]);
+        }
     }
-                                
-    if (!empty($filteredBooksSets)) {
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('books_layout.pdf_collection', compact('user', 'course_name', 'course_code', 'bookStatsSets', 'filteredBooksSets', 'subjectNamesListSets', 'subjectCodesListSets'))->setPaper('a4', 'landscape');
-        return $pdf->stream('collectionanalysis.pdf');
-    } else {
-        return view('books_layout.booklist_pdf', ['books' => $books, 'courses' => $courses, 'subjects' => $subjects]);
-    }
-}
-         
+             
     }      
       
         //     return view('books_layout.booklist_pdf', ['books' => $book, 'courses' => $courses, 'subjects' => $subjects, 'keywords' => $keywords]);

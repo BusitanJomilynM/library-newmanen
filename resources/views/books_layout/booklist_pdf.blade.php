@@ -56,27 +56,35 @@
 
             <!-- Initial Subject and Keyword Fields -->
             <div id="initialFields" class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="required">Course Subject</label>
-                        <input list="subjectList" name="subject_1" class="form-control" required>
-                            <datalist id="subjectList">
-                                <option value="" selected disabled>Select Subject</option>
-                                @foreach($subjects as $subject)
-                                    <option value="{{$subject->id . $subject->subject_name}}">{{$subject->subject_name}}</option>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required">Course Subject</label>
+                            <input list="subjectList" name="subject_1" class="form-control" required>
+                                <datalist id="subjectList">
+                                    <option value="" selected disabled>Select Subject</option>
+                                    @foreach($subjects as $subject)
+                                        <option value="{{$subject->id . $subject->subject_name}}">{{$subject->subject_name}}</option>
+                                    @endforeach
+                                </datalist>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Book Subject</label>
+                            <input list="keywordsList" name="keyword_1" id="keyword" class="form-control"  multiple>
+                        </div>
+                    </div>
+                    <!-- <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Book Barcode</label>
+                            <select class="mySelect" name="barcode_1[]" multiple="multiple" style="width: 100%" >
+                                @foreach($books as $book)
+                                <option value="{{$book->book_barcode}}">{{$book->book_barcode}}</option>
                                 @endforeach
-                            </datalist>
-                    </div>
+                            </select>
+                        </div>
+                    </div> -->
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Book Subject</label>
-
-                        <input list="keywordsList" name="keyword_1" id="keyword" class="form-control"  multiple>
-
-                    </div>
-                </div>
-            </div>
     
             <!-- Dynamic Fields Container -->
             <div id="dynamicFieldsContainer"></div>
@@ -92,86 +100,115 @@
     </div>
 </div>
 <script>
-var setCount = 2; // Start count from 2 for the additional set
+        var setCount = 2; // Start count from 2 for the additional set
 
-function addFields() {
-    var container = document.getElementById('dynamicFieldsContainer');
-    var newFieldSet = document.createElement('div');
-    newFieldSet.className = 'row';
+    function addFields() {
+        var container = document.getElementById('dynamicFieldsContainer');
+        var newFieldSet = document.createElement('div');
+        newFieldSet.className = 'row align-items-center'; // Align items vertically centered
 
-    // Subject Field
-    var subjectField = document.createElement('div');
-    subjectField.className = 'col-md-6';
-    subjectField.innerHTML = `
-        <div class="form-group">
-            <label class="required">Subject</label>
-            <input list="subjectList" name="subject_${setCount}" class="form-control" required>
-            <datalist id="subjectList">
-                <option value="" selected disabled>Select Subject</option>
-                @foreach($subjects as $subject)
-                <option value="{{$subject->id}}">{{$subject->subject_name}}</option>
-                @endforeach
-            </datalist>
-        </div>`;
-    newFieldSet.appendChild(subjectField);
+        // Subject Field
+        var subjectField = document.createElement('div');
+        subjectField.className = 'col-md-6';
+        subjectField.innerHTML = `
+            <div class="form-group">
+                <label class="required">Course Subject</label>
+                <input list="subjectList" name="subject_${setCount}" class="form-control" required>
+                <datalist id="subjectList">
+                    <option value="" selected disabled>Select Subject</option>
+                    @foreach($subjects as $subject)
+                    <option value="{{$subject->id}}">{{$subject->subject_name}}</option>
+                    @endforeach
+                </datalist>
+            </div>`;
+        newFieldSet.appendChild(subjectField);
 
-    // Keyword Field Container
-    var keywordFieldContainer = document.createElement('div');
+        // Keyword Field Container
+        var keywordFieldContainer = document.createElement('div');
         keywordFieldContainer.className = 'col-md-5 d-flex align-items-center';
 
         // Keyword Field
         var keywordField = document.createElement('div');
         keywordField.className = 'form-group flex-grow-1';
         keywordField.innerHTML = `
-            <label for="keyword_${setCount}">Keyword</label>
-            <input list="keywordsList" type="text" class="form-control" name="keyword_${setCount}" id="keyword_${setCount}" placeholder="Enter Keywords">`;
+            <label for="keyword_${setCount}">Book Subject</label>
+            <input list="keywordsList" type="text" class="form-control" name="keyword_${setCount}" id="keyword_${setCount}">`;
         keywordFieldContainer.appendChild(keywordField);
 
+        newFieldSet.appendChild(keywordFieldContainer);
 
-    // Delete button
-    var deleteButton = document.createElement('button');
-    deleteButton.className = 'btn btn-danger ml-2';
-    deleteButton.type = 'button';
-    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
-    deleteButton.onclick = function() {
-        removeFields(this);
-    };
-    keywordFieldContainer.appendChild(deleteButton);
+        // Book Barcode Field Container
+        // var barcodeFieldContainer = document.createElement('div');
+        // barcodeFieldContainer.className = 'col-md-2 d-flex align-items-center';
 
-    newFieldSet.appendChild(keywordFieldContainer);
+        // // Book Barcode Field
+        // var barcodeField = document.createElement('div');
+        // barcodeField.className = 'form-group flex-grow-1';
+        // barcodeField.innerHTML = `
+        //     <label for="barcode_${setCount}">Book Barcode</label>
+        //     <div class="dropdown">
+        //         <button class="btn btn-secondary dropdown-toggle" type="button" id="barcodeDropdownMenuButton_${setCount}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        //             Select Book Barcodes
+        //         </button>
+        //         <div class="dropdown-menu" aria-labelledby="barcodeDropdownMenuButton_${setCount}" style="max-height: 200px; overflow-y: auto;">
+        //             <input type="text" class="form-control barcode-search" placeholder="Search book barcodes">
+        //             <div class="dropdown-divider"></div>
+        //             @foreach($books as $book)
+        //             <div class="dropdown-item">
+        //                 <input type="checkbox" name="barcode_${setCount}[]" value="{{$book->book_barcode}}" id="barcode{{$book->book_barcode}}">
+        //                 <label for="barcode{{$book->book_barcode}}">{{$book->book_barcode}}</label>
+        //             </div>
+        //             @endforeach
+        //         </div>
+        //     </div>`;
+        // barcodeFieldContainer.appendChild(barcodeField);
 
-    // Increment the count
-    setCount++;
+        // newFieldSet.appendChild(barcodeFieldContainer);
 
-    container.appendChild(newFieldSet);
+        // Delete button container to align it properly
+        var deleteButtonContainer = document.createElement('div');
+        deleteButtonContainer.className = 'col-md-1 d-flex align-items-center';
 
-    // Add event listener for keyword search
-    keywordFieldContainer.querySelector('.keyword-search').addEventListener('input', function() {
-        const searchText = this.value.toLowerCase().trim(); // Convert to lowercase and remove leading/trailing spaces
-        const keywordItems = keywordFieldContainer.querySelectorAll('.dropdown-item');
-        keywordItems.forEach(function(item) {
-            const label = item.querySelector('label').textContent.toLowerCase();
-            if (label.includes(searchText)) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
+        // Delete button
+        var deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-danger ml-1';
+        deleteButton.type = 'button';
+        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteButton.onclick = function() {
+            removeFields(this);
+        };
+        deleteButtonContainer.appendChild(deleteButton);
+
+        newFieldSet.appendChild(deleteButtonContainer);
+
+        // Increment the count
+        setCount++;
+
+        container.appendChild(newFieldSet);
+
+
+        // Add event listener for barcode search
+        barcodeFieldContainer.querySelector('.barcode-search').addEventListener('input', function() {
+            const searchText = this.value.toLowerCase().trim(); // Convert to lowercase and remove leading/trailing spaces
+            const barcodeItems = barcodeFieldContainer.querySelectorAll('.dropdown-item');
+            barcodeItems.forEach(function(item) {
+                const label = item.querySelector('label').textContent.toLowerCase();
+                if (label.includes(searchText)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         });
-    });
-}
+    }
 
-// Function to remove fields
-function removeFields(button) {
-    var container = button.closest('.row');
-    container.remove();
-}
+    // Function to remove fields
+    function removeFields(button) {
+        var container = button.closest('.row');
+        container.remove();
+    }
 
-function removeFields(button) {
-    var container = button.closest('.row');
-    container.remove();
-}
-
-</script>
+    </script>
 <script>
 
 var placeholder = "Select Keyword";
