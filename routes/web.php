@@ -83,12 +83,14 @@ Route::group(['auth', ['user-access:technician librarian|staff librarian']], fun
 
     //books
     Route::get('/book/archive/{book}', [BookController::class, 'archiveBook'])->name('archiveBook');
+    Route::get('/book/archive/{book}', [BookController::class, 'archiveBook'])->name('archiveBook');
     Route::get('/book/restore/{book}', [BookController::class, 'restoreBook'])->name('restoreBook');
     Route::get('/book/restoreUpdate/{book}', [BookController::class, 'restoreUpdate'])->name('restoreUpdate');
     Route::get('/book/archiveUpdate/{book}', [BookController::class, 'archiveUpdate'])->name('archiveUpdate');
     Route::get('/archives', [BookController::class, 'archive'])->name('archive');
     Route::get('/books/view_bookdetails/{book}', [BookController::class, 'view_bookdetails'])->name('books.view_bookdetails');
     Route::get('/books/book_createcopy/{book}', [BookController::class, 'book_createcopy'])->name('books.book_createcopy');
+    Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
 
     //requisitions
     Route::post('/requisitions/pendingRequisitions', [RequisitionController::class, 'pendingRequisitions'])->name('pendingRequisitions');

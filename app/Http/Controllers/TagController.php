@@ -195,7 +195,7 @@ class TagController extends Controller
     {
         $tag->update($request->all()); 
 
-        return redirect()->route('tags.index')->with('success','Tag successfully updated!');
+        return redirect()->route('tags.index')->with('success','Book Subject successfully updated!');
     }
 
     /**
@@ -208,7 +208,7 @@ class TagController extends Controller
     {
         $tag->delete();
 
-        return redirect()->route('tags.index')->with('success', 'Tag deleted!');
+        return redirect()->route('tags.index')->with('success', 'Book Subject deleted!');
     }
 
     public function accept(Request $request, Tag $tag)
@@ -286,7 +286,7 @@ class TagController extends Controller
             $tag->save();
         }
     
-        return redirect()->back()->with('success', 'Tags appended');
+        return redirect()->back()->with('success', 'Book Subject appended');
     }
     
     public function replacet(Request $request, $tag, $book){
@@ -305,7 +305,7 @@ class TagController extends Controller
         $tag->status = 1;
         $tag->save();
     
-        return redirect()->back()->with('success', 'Tags replaced');
+        return redirect()->back()->with('success', 'Book Subject replaced');
     }
     
 }

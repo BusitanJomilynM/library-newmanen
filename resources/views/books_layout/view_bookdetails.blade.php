@@ -16,48 +16,52 @@
 <br><br>
 
 <div class="text-center">
-    <div class="form">
-        <h5>Title: {{ $book->book_title }}</h5>
-    </div>
-    <div class="form">
-        <h5>Author: {{ $book->book_author }}</h5>
-    </div>
-    <div class="form">
-        <h5>Abstract: {{ $book->book_abstract }}</h5>
-    </div>
-    <div class="form">
-        <h5>Copyright Year: {{ $book->book_copyrightyear }}</h5>
-    </div>
-    <div class="form">
-        <h5>Location: {{ $book->book_sublocation }}</h5>
-    </div>
-    <div class="form">
-        <h5>Accession Number: {{ $book->book_barcode }}</h5>
-    </div>
-    <div class="form">
-        <h5>Call Number: {{ $book->book_callnumber }} {{ $book->book_callnumberdescription }}</h5>
-    </div>
-    <div class="form">
-        <h5>Publisher: {{ $book->book_publisher }}</h5>
-    </div>
-    <div class="form">
-        <h5>Edition: {{ $book->book_edition }}</h5>
-    </div>
-    <div class="form">
-        <h5>ISBN: {{ $book->book_isbn }}</h5>
-    </div>
-    <div class="form">
-        <h5>Book Subject: {{ $book->book_keyword }}</h5>
-    </div>
-    <div class="form">
-        <h5>Course Subject the Book is Associated to:
-            @foreach($subjects as $subject)
-                @if(in_array($subject->id, json_decode($book->book_subject)))
-                    {{ $subject->subject_name }},
-                @endif
-            @endforeach
-        </h5>
-    </div>
+    <table class="table">
+        <tbody>
+            <tr>
+                <td colspan="2"><h5><strong>Title:</strong> {{ $book->book_title }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Abstract:</strong> {{ $book->book_abstract }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Author:</strong> {{ $book->book_author }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Copyright Year:</strong> {{ $book->book_copyrightyear }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Location:</strong> {{ $book->book_sublocation }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Accession Number:</strong> {{ $book->book_barcode }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Call Number:</strong> {{ $book->book_callnumber }} {{ $book->book_callnumberdescription }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Publisher:</strong> {{ $book->book_publisher }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Edition:</strong> {{ $book->book_edition }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>ISBN:</strong> {{ $book->book_isbn }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Book Subject:</strong> {{ $book->book_keyword }}</h5></td>
+            </tr>
+            <tr>
+                <td colspan="2"><h5><strong>Course Subject the Book is Associated to:</strong> 
+                    @foreach($subjects as $subject)
+                        @if(in_array($subject->id, json_decode($book->book_subject)))
+                            {{ $subject->subject_name }},
+                        @endif
+                    @endforeach
+                </h5></td>
+            </tr>
+        </tbody>
+    </table>
 
 
 @if ($canSuggest)
@@ -69,9 +73,48 @@
         <a data-toggle="modal" class="btn btn-primary" data-target="#editBookModal" data-action="{{ route('books.edit', $book->id) }}"><span>&#9776;</span> Edit</a>
         <a data-toggle="modal" class="btn btn-success" data-target="#createCopyModal" data-action="{{ route('books.book_createcopy', $book->id) }}"><span>&#43;</span> Add Copy</a>
         <a data-toggle="modal" class="btn btn-warning" data-target="#archiveBookModal" data-action="{{ route('archiveBook', $book->id) }}">Archive</a>
+        <a data-toggle="modal" class="btn btn-warning" data-target="#deleteBookModal_{{$book->id}}">Delete</a>
     </div>
 @endif
 </div>
+
+<!-- Delete Book Modal -->
+<div class="modal fade" id="deleteBookModal_{{$book->id}}" data-backdrop="static" tabindex="-1" role="dialog"
+    aria-labelledby="deleteBookModalLabel_{{$book->id}}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteBookModalLabel_{{$book->id}}">Are you sure you want to delete this book?</h5>
+            </div>
+            <form action="{{ route('books.destroy', $book->id) }}" method="POST">
+                <div class="modal-body">
+                    @csrf
+                    @method('DELETE')
+                    <h5 class="text-center">Delete book: <strong>{{$book->book_title}}</strong>?</h5>
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="form-check mx-3">
+                            <input class="form-check-input" type="radio" name="delete_option" id="delete_single_{{$book->id}}" value="single" checked>
+                            <label class="form-check-label h5" for="delete_single_{{$book->id}}">
+                                This specific book only.
+                            </label>
+                        </div>
+                        <div class="form-check mx-3">
+                            <input class="form-check-input" type="radio" name="delete_option" id="delete_all_{{$book->id}}" value="all">
+                            <label class="form-check-label h5" for="delete_all_{{$book->id}}">
+                                All duplicate copies of this book.
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Suggest Subject Modal -->
 <div class="modal fade" id="createTagModal_{{$book->book_barcode}}" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="createTagModalLabel_{{$book->book_barcode}}" aria-hidden="true">
   <div class="modal-dialog" role="document">

@@ -46,22 +46,23 @@
       <td>{{$user->email}}</td>
       <td>{{$user->contact_number}}</td>
       <td>
-      @if($user->type == '0')  
+    @if($user->type == '0')  
         Technical Librarian
-      @elseif($user->type == '1')
-        Section  Librarian
-      @elseif($user->type == '2')
+    @elseif($user->type == '1')
+        Section Librarian
+    @elseif($user->type == '2')
         Program Chairman
-      @elseif($user->type == '3')
+    @elseif($user->type == '3')
         Faculty Staff
-      @endif</td>
-    <td>
+    @endif
+</td>
+<td>
     <div class="btn-group">
         <a data-toggle="modal" class="btn btn-primary" data-target="#editUserModal_{{$user->id}}" data-action="{{ route('users.edit', $user->id) }}"><span>&#9776;</span> </a>
         <a class="btn btn-success" href="{{ route('restorePassword', $user->id) }}" role="button"><span>&#9733;</span></a>
 
-        @if($user->type == 'technician librarian')  
-            @if($techcount>1 && $user->id != $userId)
+        @if($user->type == '0')  <!-- Checking if the user is a Technical Librarian by type '0' -->
+            @if($techcount > 1 && $user->id != $userId)
                 <a data-toggle="modal" class="btn btn-danger" data-target="#deleteUserModal_{{$user->id}}" data-action="{{ route('confirmDestroy', $user->id) }}"><i class="fa fa-trash"></i></a>
             @else
                 <!-- Handle the case where $techcount is not greater than 1 or $user->id is equal to $userId -->

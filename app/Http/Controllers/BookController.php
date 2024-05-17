@@ -224,10 +224,10 @@ class BookController extends Controller{
      */
     public function update(UpdateBookRequest $request, Book $book): RedirectResponse
     {
-        $user = Auth::user();
-        if ($user->type !== 'technical librarian' && $user->type !== 'staff librarian') {           
-             return redirect()->back()->with('error', 'You do not have permission to perform this action.');
-        }
+        // $user = Auth::user();
+        // if ($user->type !== 'technical librarian' && $user->type !== 'staff librarian') {           
+        //      return redirect()->back()->with('error', 'You do not have permission to perform this action.');
+        // }
     
         // Extract book_barcode from the request
         $bookBarcode = $request->input('book_barcode');
@@ -257,16 +257,27 @@ class BookController extends Controller{
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Book $book): \Illuminate\Http\RedirectResponse
+    public function destroy(Request $request, Book $book)
     {
-        $user = Auth::user();
-        if ($user->type !== 'technical librarian' && $user->type !== 'staff librarian') {           
-            $book->delete();
-            return redirect()->route('archive')->with('success', 'Book Deleted');
+        $deleteOption = $request->input('delete_option');
+    
+        if ($deleteOption == 'all') {
+            // Find all books with the same book_callnumber
+            $bookCallNumber = $book->book_callnumber;
+            $booksToDelete = Book::where('book_callnumber', $bookCallNumber)->get();
+            
+            foreach ($booksToDelete as $bookToDelete) {
+                $bookToDelete->delete();
+            }
         } else {
-            return redirect()->back();
+            // Delete only the specific book
+            $book->delete();
         }
+    
+        return redirect()->route('books.index')->with('success', 'Book(s) deleted successfully');
     }
+    
+    
     
 
         
