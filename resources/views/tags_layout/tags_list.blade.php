@@ -57,8 +57,8 @@
     <th>Requested by</th>
     <th>Department</th>
     <th>Book Barcode</th>
-    <th>Current Tags</th>
-    <th>Suggested Tags</th>
+    <th>Current Book Subject</th>
+    <th>Suggested Book Subject</th>
     <th>Suggested Action</th>
     <th>Status</th>
     <th>Actions</th>
